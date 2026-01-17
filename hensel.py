@@ -228,8 +228,7 @@ class RuleHandler:
         if condition[0] == 'S':
             newcon = condition.replace('S', 'B')
             newlist = self.get_9bit(newcon)
-            for x in range(len(newlist)):
-                newlist[x] += 16
+            newlist = [x + 16 for x in newlist]
             return newlist
         return []
     def makeconditionset(self, rule):

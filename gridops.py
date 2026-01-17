@@ -23,7 +23,7 @@ def firstcell(grid):
     leftcoord = min(exes)
     return (leftcoord, topcoord)
 def transformgrid(grid, transformgridation):
-    '''Apply a transformgridation to a grid.'''
+    '''Apply a transformation to a grid.'''
     grid = cleanupgrid(grid)
     newgrid = {}
     transformgridations = ['flip_x', 'flip_y', 'identity', 'rot_90', 'rot_180', 'rot_270', 'flip_xy', 'rcw', 'rccw']
@@ -94,11 +94,10 @@ def applyop(grid1, grid2, operation):
     '''Apply an operation to two grids.'''
     grid1 = cleanupgrid(grid1)
     grid2 = cleanupgrid(grid2)
-    operations = ['add', 'sub', 'xor']
     operation = operation.lower()
     newgrid = {}
-    set1 = {x for x in grid1}
-    set2 = {x for x in grid2}
+    set1 = set(grid1)
+    set2 = set(grid2)
     match operation:
         case 'add':
             set3 = set1 + set2
@@ -110,5 +109,63 @@ def applyop(grid1, grid2, operation):
             set3 = (set1 - set2) + (set2 - set1)
             newgrid = {x:1 for x in set3}
     return newgrid
-
+def getcell(grid, tupleused):
+    '''Get the value of a cell.'''
+    if tupleused in grid:
+        return 1
+    return 0
+def getgridapgcode(grid):
+    '''Find the apgcode of a grid.'''
+    characters = '0123456789abcdefghijklmnopqrstuvwxyz'
+    grid = cleanupgrid(grid)
+    grid = defaultshiftgrid(grid)
+    if len(grid) == 0:
+        return '0'
+    bbox = getbbox(grid)
+    x, y, dx, dy = bbox[0], bbox[1], bbox[2], bbox[3]
+    apgcode = ''
+    for w in range((dy - 1)//5 + 1):
+        if w != 0:
+            apgcode += 'z'
+        for l in range(dx):
+            val = 0
+            for h in range(5):
+                val += ((2**h) * getcell(grid, (x + l, y + 5 * w + h)))
+            apgcode += characters[val]
+    while apgcode.count('0z') > 0:
+        apgcode = apgcode.replace('0z', 'z')
+    for a in range(39, 3, -1):
+        apgcode = apgcode.replace('0' * a, 'y' + characters[a-4])
+    apgcode = apgcode.replace('000', 'x')
+    apgcode = apgcode.replace('00', 'w')
+    forbiddenend = ['w', 'x', 'z', '0', 'y']
+    forbiddenend += [n + '0' for n in forbiddenend]
+    forbiddenend += ['y' + a for a in characters]
+    forbiddenbeforez = ['x']
+    if len(apgcode) > 0:
+        while (apgcode[-1] in forbiddenend or apgcode[-2:-1] in forbiddenend):
+            apgcode = apgcode[:-1]
+    for z in forbiddenbeforez:
+        while apgcode.count(z + 'z') > 0:
+            apgcode = apgcode.replace(z + 'z', 'z')
+    return apgcode
+def apgcodetogrid(apgcode):
+    position = 0
+    grid = {}
+    characters = '0123456789abcdefghijklmnopqrstuvwxyz'
+def getorientations(grid):
+    transformed = [grid, transformgrid(grid, 'rot_90'), transformgrid(grid, 'rot_180'), transformgrid(grid, 'rot_270')]
+    transformed += [transformgrid(transformgrid(grid, 'flip_x'), 'rot_90'), transformgrid(transformgrid(grid, 'flip_x'), 'rot_180'), transformgrid(transformgrid(grid, 'flip_x'), 'rot_270'), transformgrid(transformgrid(grid, 'flip_x'), 'identity')]
+    return transformed
+def compareapgcode(code1, code2):
+    if code1 == code2:
+        return code1
+    if len(code1) < len(code2):
+        return code1
+    if len(code2) < len(code1):
+        return code2
+    if code1 < code2:
+        return code1
+    if code1 > code2:
+        return code2
     

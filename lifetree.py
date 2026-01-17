@@ -1,9 +1,10 @@
 '''The code for the lifetree and Pattern classes, which are the highest level components.'''
+#Importing modules:
 import copy
-import random
 import os
 import urllib.request
 import hashlib
+#Other project modules:
 try:
     from .hensel import *
 except ImportError:
@@ -12,7 +13,9 @@ try:
     from .gridops import *
 except ImportError:
     from gridops import *
-class lifetree:
+#A few global variables:
+CATAGOLUE_URL = 'https://catagolue.hatsya.com'
+class Lifetree:
     '''Handles and simulates patterns.'''
     def __init__(self, rule='b3s23'):
         self.rulehandler = RuleHandler()
@@ -140,63 +143,40 @@ class lifetree:
             d = 2
         else:
             d = 0
-            
         for j in range(32):
-
             t = s[j]
-
             for k in range(8):
-
                 if sym in ['8x32']:
-                    
                     x = k + 8*(j % 4)
                     y = int(j / 4)
-                    
-                elif sym in ['4x64']:
-                    
+                elif sym in ['4x64']:  
                     x = k + 8*(j % 8)
                     y = int(j / 8)
-            
                 elif sym in ['2x128']:
-                    
                     x = k + 8*(j % 16)
                     y = int(j / 16)
-                    
                 elif sym in ['1x256']:
-                    
                     x = k + 8*(j % 32)
                     y = int(j / 32)
-                    
                 else:
-                    
                     x = k + 8*(j % 2)
                     y = int(j / 2)
-
                 if (t & (1 << (7 - k))):
-                    
                     if (d == 0) | (x >= y):
-
                         thesoup.append(x)
                         thesoup.append(y)
                     elif sym in ['D4_x1']:
-
                         thesoup.append(y)
                         thesoup.append(-x)
-
                     elif sym in ['D4_x4']:
-
                         thesoup.append(y)
                         thesoup.append(-x-1)
                     if sym in ['D4_x1'] & (x == y):
-
                         thesoup.append(y)
                         thesoup.append(-x)
-
                     if sym in ['D4_x4'] & (x == y):
-
                         thesoup.append(y)
                         thesoup.append(-x-1)
-
         # Checks for diagonal symmetries:
         if (d >= 1):
             for x in range(0, len(thesoup), 2):
@@ -220,7 +200,6 @@ class lifetree:
             for x in range(0, len(thesoup), 2):
                 thesoup.append(thesoup[x])
                 thesoup.append(-thesoup[x+1] - 1)
-
         # Checks for orthogonal y symmetry:
         if sym in ['D4_+1']:
             for x in range(0, len(thesoup), 2):
@@ -230,8 +209,6 @@ class lifetree:
             for x in range(0, len(thesoup), 2):
                 thesoup.append(-thesoup[x] - 1)
                 thesoup.append(thesoup[x+1])
-
-
         # Checks for rotate2 symmetry:
         if sym in ['C2_1', 'C4_1', 'D8_1']:
             for x in range(0, len(thesoup), 2):
@@ -245,7 +222,6 @@ class lifetree:
             for x in range(0, len(thesoup), 2):
                 thesoup.append(-thesoup[x]-1)
                 thesoup.append(-thesoup[x+1]-1)
-
         # Checks for rotate4 symmetry:
         if (sym in ['C4_1', 'D8_1']):
             for x in range(0, len(thesoup), 2):
@@ -259,22 +235,18 @@ class lifetree:
         for x in range(len(thesoup)//2):
             thesoup2[(thesoup[2*x], thesoup[2*x+1])] = 1
         return self.pattern(thesoup2)
-
     def download_synth(self, apgcode):
         '''Downloads a glider synthesis from Catagolue.'''
         if self.rule != 'b3s23':
             raise ValueError('Can only download syntheses if configured for b3s23.')
-        URL = 'https://catagolue.hatsya.com'
-        c = urllib.request.urlopen(URL + '/textsamples/' + apgcode + '/' + 'b3s23/synthesis')
+        c = urllib.request.urlopen(CATAGOLUE_URL + '/textsamples/' + apgcode + '/' + 'b3s23/synthesis')
         response = c.read().decode('utf-8')
         if 'x' in response:
             return response
-        else:
-            return None
+        return None
     def download_soups(self, apgcode, sym='C1'):
         '''Returns a list of soups producing a target object.'''
-        URL = 'https://catagolue.hatsya.com'
-        c = urllib.request.urlopen(URL + '/textsamples/' + apgcode + '/' + self.rule)
+        c = urllib.request.urlopen(CATAGOLUE_URL + '/textsamples/' + apgcode + '/' + self.rule)
         response = c.read().decode('utf-8')
         soups = []
         for x in response.split('\n'):
@@ -286,7 +258,6 @@ class lifetree:
                 continue
             soups.append(self.hashsoup(seed, symmetry))
         return soups
-            
     def pattern(self, rle_or_grid):
         '''Creates a new Pattern given an RLE string.'''
         if type(rle_or_grid) == type(''):
@@ -318,7 +289,7 @@ class Pattern:
         if type(self) != type(other):
             raise TypeError('Can only perform logical operations with other instances of Pattern.')
         cells = applyop(self.grid, other.grid, 'add')
-        return self.lt.pattern(cells)
+        return self.lifetree.pattern(cells)
     def __add__(self, other):
         '''Returns the OR of two patterns.'''
         return self.__or__(other)
@@ -327,7 +298,7 @@ class Pattern:
         if type(self) != type(other):
             raise TypeError('Can only perform logical operations with other instances of Pattern.')
         cells = applyop(self.grid, other.grid, 'xor')
-        return self.lt.pattern(cells)
+        return self.lifetree.pattern(cells)
     def __sub__(self, other):
         '''Removes live cells in one pattern from the other.'''
         if type(self) != type(other):
@@ -340,7 +311,7 @@ class Pattern:
     def transform(self, transformation):
         '''Transforms a pattern relative to the origin.'''
         pt2 = self.clone()
-        pt2.grid = transform(self.grid, transformation)
+        pt2.grid = transformgrid(self.grid, transformation)
         return pt2
     def clone(self):
         '''Creates a copy of a pattern.'''
@@ -356,6 +327,18 @@ class Pattern:
         self2.grid = shiftgrid(self.grid, dx, dy)
         self2.cleanup()
         return self2
+    def oscar(self, maxgens=1024):
+        '''Finds the period of a pattern. Returns an error if it is aperiodic.'''
+        inithash = self.digest
+        pt = self.clone()[1]
+        gens = 1
+        while pt.digest != inithash:
+            pt = pt[1]
+            gens += 1
+            if gens > maxgens:
+                raise ValueError('Pattern does not become periodic within '+str(maxgens)+' generations.')
+                return -1
+        return gens
     @property
     def rle(self):
         '''The Run Length Encoding (RLE) of a pattern.'''
@@ -390,7 +373,23 @@ class Pattern:
         return calcdigest(self.grid)
     @property
     def octodigest(self):
+        '''A hash of the pattern (orientation independent).'''
         return calcoctodigest(self.grid)
+    @property
+    def period(self):
+        '''The period of a pattern. Returns an error if aperiodic.'''
+        return self.oscar()
+    @property
+    def displacement(self):
+        '''The displacement of a periodic pattern in the form (dx, dy). Returns an error if aperiodic.'''
+        period = self.period
+        if self.population == 0:
+            raise ValueError('Cannot calculate displacement for an empty pattern.')
+        firstcella = self.firstcell
+        firstcellb = self[period].firstcell
+        displacement = (firstcellb[0] - firstcella[0], firstcellb[1] - firstcella[1])
+        return displacement
+        
     @property
     def bbox(self):
         '''The bounding box of a pattern in the form [x, y, dx, dy].'''
@@ -433,4 +432,32 @@ class Pattern:
             for y in x:
                 current_island[y] = 1
             islands2.append(self.lifetree.pattern(current_island))
-        return islands2                           
+        return islands2
+    @property
+    def apgcode(self):
+        '''A unique identifier for periodic patterns.'''
+        print(getgridapgcode(self.grid))
+        period = self.period
+        print(period)
+        if period == -1:
+            return 'aperiodic'
+        pt = self.clone()
+        gridphases = []
+        for x in range(period):
+            gridphases.append(pt.grid)
+            pt = pt[1]
+        gridphases2 = []
+        for x in gridphases:
+            gridphases2 += getorientations(x)
+        canonicalapgcode = 'Z'*10000
+        for x in gridphases2:
+            canonicalapgcode = compareapgcode(canonicalapgcode, getgridapgcode(x))
+        if period == 1:
+            prefix = 'xs' + str(self.population) + '_'
+        else:
+            if self.displacement != (0, 0):
+                prefix = 'xq' + str(period) + '_'
+            else:
+                prefix = 'xp' + str(period) + '_'
+        
+        return prefix + canonicalapgcode
