@@ -1,5 +1,6 @@
 '''The code for the lifetree and Pattern classes, which are the highest level components.'''
 import copy
+import random
 import os
 import urllib.request
 import hashlib
@@ -7,6 +8,10 @@ try:
     from .hensel import *
 except ImportError:
     from hensel import *
+try:
+    from .gridops import *
+except ImportError:
+    from gridops import *
 class lifetree:
     '''Handles and simulates patterns.'''
     def __init__(self, rule='b3s23'):
@@ -24,13 +29,10 @@ class lifetree:
                     if coord not in neighbours:
                         neighbours[coord] = 0
                     neighbours[coord] += 2**(8 - 3 * b - a)
-        for x in neighbours:
-            if x not in grid:
-                grid[x] = 0
-        return grid, neighbours
+        return neighbours
     def advanceone(self, grid):
         '''Advance a grid of cells by one generation.'''
-        grid, neighbours = self.getneighbours(grid)
+        neighbours = self.getneighbours(grid)
         newgrid = {}
         for x in neighbours:
             if neighbours[x] in self.conditionset:
@@ -53,7 +55,7 @@ class lifetree:
         while position + 1 < len(rle):
             position += 1
             if not isnum:
-                if rle[position] == '#':
+                if rle[position] == '#' or rle[position] == 'x':
                     while rle[position] != '\n' and position < len(rle) - 1:
                         position += 1
                     continue
@@ -141,26 +143,26 @@ class lifetree:
             
         for j in range(32):
 
-            t = (s[j])
+            t = s[j]
 
             for k in range(8):
 
-                if (sym in ['8x32']):
+                if sym in ['8x32']:
                     
                     x = k + 8*(j % 4)
                     y = int(j / 4)
                     
-                elif (sym in ['4x64']):
+                elif sym in ['4x64']:
                     
                     x = k + 8*(j % 8)
                     y = int(j / 8)
             
-                elif (sym in ['2x128']):
+                elif sym in ['2x128']:
                     
                     x = k + 8*(j % 16)
                     y = int(j / 16)
                     
-                elif (sym in ['1x256']):
+                elif sym in ['1x256']:
                     
                     x = k + 8*(j % 32)
                     y = int(j / 32)
@@ -172,25 +174,25 @@ class lifetree:
 
                 if (t & (1 << (7 - k))):
                     
-                    if ((d == 0) | (x >= y)):
+                    if (d == 0) | (x >= y):
 
                         thesoup.append(x)
                         thesoup.append(y)
-                    elif (sym in ['D4_x1']):
+                    elif sym in ['D4_x1']:
 
                         thesoup.append(y)
                         thesoup.append(-x)
 
-                    elif (sym in ['D4_x4']):
+                    elif sym in ['D4_x4']:
 
                         thesoup.append(y)
                         thesoup.append(-x-1)
-                    if ((sym in ['D4_x1']) & (x == y)):
+                    if sym in ['D4_x1'] & (x == y):
 
                         thesoup.append(y)
                         thesoup.append(-x)
 
-                    if ((sym in ['D4_x4']) & (x == y)):
+                    if sym in ['D4_x4'] & (x == y):
 
                         thesoup.append(y)
                         thesoup.append(-x-1)
@@ -201,7 +203,7 @@ class lifetree:
                 thesoup.append(thesoup[x+1])
                 thesoup.append(thesoup[x])
             if d == 2:
-                if (sym == 'D4_x1'):
+                if sym == 'D4_x1':
                     for x in range(0, len(thesoup), 2):
                         thesoup.append(-thesoup[x+1])
                         thesoup.append(-thesoup[x])
@@ -209,13 +211,6 @@ class lifetree:
                     for x in range(0, len(thesoup), 2):
                         thesoup.append(-thesoup[x+1] - 1)
                         thesoup.append(-thesoup[x] - 1)
-                for i in range(inflationamount):
-                    thenewsoup = []
-                    for x in range(len(thesoup)//2):
-                        thenewsoup = thenewsoup + [thesoup[x*2]*2, thesoup[x*2+1]*2,thesoup[x*2]*2+1, thesoup[x*2+1]*2,thesoup[x*2]*2, thesoup[x*2+1]*2+1,thesoup[x*2]*2+1, thesoup[x*2+1]*2+1]
-                    thesoup = thenewsoup
-                return thesoup
-
         # Checks for orthogonal x symmetry:
         if sym in ['D2_+1', 'D4_+1', 'D4_+2']:
             for x in range(0, len(thesoup), 2):
@@ -260,14 +255,6 @@ class lifetree:
             for x in range(0, len(thesoup), 2):
                 thesoup.append(thesoup[x+1])
                 thesoup.append(-thesoup[x]-1)
-        inflationamount = 0
-        while sym.startswith((inflationamount + 1)*'i'):
-            inflationamount += 1
-        for i in range(inflationamount):
-            thenewsoup = []
-            for x in range(len(thesoup)//2):
-                thenewsoup = thenewsoup + [thesoup[x*2]*2, thesoup[x*2+1]*2,thesoup[x*2]*2+1, thesoup[x*2+1]*2,thesoup[x*2]*2, thesoup[x*2+1]*2+1,thesoup[x*2]*2+1, thesoup[x*2+1]*2+1]
-            thesoup = thenewsoup
         thesoup2 = {}
         for x in range(len(thesoup)//2):
             thesoup2[(thesoup[2*x], thesoup[2*x+1])] = 1
@@ -284,11 +271,26 @@ class lifetree:
             return response
         else:
             return None
-        
+    def download_soups(self, apgcode, sym='C1'):
+        '''Returns a list of soups producing a target object.'''
+        URL = 'https://catagolue.hatsya.com'
+        c = urllib.request.urlopen(URL + '/textsamples/' + apgcode + '/' + self.rule)
+        response = c.read().decode('utf-8')
+        soups = []
+        for x in response.split('\n'):
+            data = x.split('/')
+            if len(data) != 2:
+                continue
+            symmetry, seed = data[0], data[1]
+            if symmetry != sym:
+                continue
+            soups.append(self.hashsoup(seed, symmetry))
+        return soups
+            
     def pattern(self, rle_or_grid):
         '''Creates a new Pattern given an RLE string.'''
         if type(rle_or_grid) == type(''):
-            grid = self.rle_to_grid(rle)
+            grid = self.rle_to_grid(rle_or_grid)
         else:
             grid = rle_or_grid
         pt = Pattern(self, grid)
@@ -308,68 +310,52 @@ class Pattern:
         '''Translates or transforms a pattern.'''
         if len(args) == 2:
             return self.move(args[0], args[1])
+        if len(args) == 1:
+            return self.transform(args[0])
+        raise TypeError('Expected at most 2 arguments, received '+str(len(args))+'.')
+    def __or__(self, other):
+        '''Returns the OR of two patterns.'''
+        if type(self) != type(other):
+            raise TypeError('Can only perform logical operations with other instances of Pattern.')
+        cells = applyop(self.grid, other.grid, 'add')
+        return self.lt.pattern(cells)
+    def __add__(self, other):
+        '''Returns the OR of two patterns.'''
+        return self.__or__(other)
+    def __xor__(self, other):
+        '''Returns the XOR of two patterns.'''
+        if type(self) != type(other):
+            raise TypeError('Can only perform logical operations with other instances of Pattern.')
+        cells = applyop(self.grid, other.grid, 'xor')
+        return self.lt.pattern(cells)
+    def __sub__(self, other):
+        '''Removes live cells in one pattern from the other.'''
+        if type(self) != type(other):
+            raise TypeError('Can only perform logical operations with other instances of Pattern.')
+        cells = applyop(self.grid, other.grid, 'sub')
+        return self.lifetree.pattern(cells)
+    def __ixor__(self, other):
+        '''Returns the XOR of two patterns.'''
+        return self.__xor__(other)
     def transform(self, transformation):
         '''Transforms a pattern relative to the origin.'''
-        #It's currently not possible to go from any orientation to
-        #any other orientation with just one transformation.
-        transformations = ['flip_x', 'flip_y', 'identity', 'rot_90', 'rot_180', 'rot_270', 'flip_xy', 'rcw', 'rccw']
-        if transformation not in transformations:
-            raise ValueError('Only the following transformations are supported: '+str(transformations))
         pt2 = self.clone()
-        grid = pt2.grid
-        newgrid = {}
-        match transformation:
-            case 'identity':
-                pass
-            case 'flip_x':
-                for x,y in grid:
-                    newgrid[(-x,y)] = 1
-            case 'flip_y':
-                for x,y in grid:
-                    newgrid[(x,-y)] = 1
-            case 'flip_xy':
-                for x,y in grid:
-                    newgrid[(-x,-y)] = 1
-            case 'rot_90':
-                for x,y in grid:
-                    newgrid[(y, -x)] = 1
-            case 'rot_180':
-                for x,y in grid:
-                    newgrid[(-x,-y)] = 1
-            case 'rot_270':
-                for x,y in grid:
-                    newgrid[(-y, x)] = 1
-            case 'rcw':
-                for x,y in grid:
-                    newgrid[(y, -x)] = 1
-            case 'rccw':
-                for x,y in grid:
-                    newgrid[(-y, x)] = 1
-        pt2.grid = newgrid
+        pt2.grid = transform(self.grid, transformation)
         return pt2
     def clone(self):
-        '''Creates a copy of a lifetree.'''
+        '''Creates a copy of a pattern.'''
         thecopy = copy.deepcopy(self)
         thecopy.cleanup()
         return thecopy
     def cleanup(self):
-        '''Cleans up the stored data of a lifetree.'''
-        toremove = []
-        for x in self.grid:
-            if self.grid[x] == 0:
-                toremove.append(x)
-        for x in toremove:
-            self.grid.pop(x)
+        '''Cleans up the stored data of a pattern.'''
+        self.grid = cleanupgrid(self.grid)
     def move(self, dx, dy):
         '''Translates a pattern by (dx, dy).'''
         self2 = self.clone()
-        newgrid = {}
-        for x in self2.grid:
-            newgrid[x[0] + dx, x[1] + dy] = 1
-        self2.grid = newgrid
+        self2.grid = shiftgrid(self.grid, dx, dy)
         self2.cleanup()
         return self2
-
     @property
     def rle(self):
         '''The Run Length Encoding (RLE) of a pattern.'''
@@ -399,6 +385,13 @@ class Pattern:
                 return x
         return None
     @property
+    def digest(self):
+        '''A hash of the pattern (orientation dependent).'''
+        return calcdigest(self.grid)
+    @property
+    def octodigest(self):
+        return calcoctodigest(self.grid)
+    @property
     def bbox(self):
         '''The bounding box of a pattern in the form [x, y, dx, dy].'''
         cells = self.coords
@@ -413,15 +406,31 @@ class Pattern:
         dx = max(exes) - x + 1
         dy = max(whys) - y + 1
         return [x, y, dx, dy]
-##lt = Lifetree('B3/S23')
-##pt = lt.pattern('o2b$3o$bo!')
-##print(pt.population)
-##pt2 = pt[100]
-##print(pt.population)
-##print(pt2.population)
-##grid = {(10,10):1,(11,10):1,(10,11):1,(9,10):1,(9,9):1}
-##timer = stopwatch.Stopwatch()
-##timer.start()
-##grid = lt.advance(grid, 1103)
-##print(timer.stop())
-##print(len(grid))
+    @property
+    def components(self):
+        '''A list of the connected islands in a pattern.'''
+        coords = self.coords
+        islands = []
+        while len(coords) > 0:
+            coord = coords[0]
+            island = [coord]
+            coords.remove(coord)
+            chosencoord = 0
+            while chosencoord < len(island):
+                coord = island[chosencoord]
+                for dx in range(-1, 2):
+                    for dy in range(-1, 2):
+                        neighbour = (coord[0] + dx, coord[1] + dy)
+                        if neighbour in coords and neighbour not in islands:
+                            coords.remove(neighbour)
+                            island.append(neighbour)
+                chosencoord += 1
+            islands.append(island)
+
+        islands2 = []
+        for x in islands:
+            current_island = {}
+            for y in x:
+                current_island[y] = 1
+            islands2.append(self.lifetree.pattern(current_island))
+        return islands2                           
