@@ -83,7 +83,7 @@ def calcdigest(grid):
         total += sha1(str(x))
     return total
 def calcoctodigest(grid):
-    '''Return a digest of a grid, independent of rotation, reflection, and position.'''
+    '''Returns a digest of a grid, independent of rotation, reflection, and position.'''
     total = 0
     transformgrided = [grid, transformgrid(grid, 'rot_90'), transformgrid(grid, 'rot_180'), transformgrid(grid, 'rot_270')]
     transformgrided += [transformgrid(transformgrid(grid, 'flip_x'), 'rot_90'), transformgrid(transformgrid(grid, 'flip_x'), 'rot_180'), transformgrid(transformgrid(grid, 'flip_x'), 'rot_270'), transformgrid(transformgrid(grid, 'flip_x'), 'identity')]
@@ -91,7 +91,7 @@ def calcoctodigest(grid):
         total += calcdigest(x)
     return total
 def applyop(grid1, grid2, operation):
-    '''Apply an operation to two grids.'''
+    '''Applies an operation to two grids.'''
     grid1 = cleanupgrid(grid1)
     grid2 = cleanupgrid(grid2)
     operation = operation.lower()
@@ -110,17 +110,24 @@ def applyop(grid1, grid2, operation):
             newgrid = {x:1 for x in set3}
     return newgrid
 def getcell(grid, tupleused):
-    '''Get the value of a cell.'''
+    '''Gets the value of a cell.'''
     if tupleused in grid:
         return 1
     return 0
 def getgridapgcode(grid):
-    '''Find the apgcode of a grid.'''
+    '''Finds the apgcode of a grid.'''
+    #Documentation of apgcode format can be found at:
+    #https://conwaylife.com/wiki/Apgcode
+    #To my future self:
+    #This function is a mess, but if all else fails,
+    #Check apgsearch Py3 code to understand how it works.
     characters = '0123456789abcdefghijklmnopqrstuvwxyz'
     grid = cleanupgrid(grid)
     grid = defaultshiftgrid(grid)
+    #Empty grids have no live cells:
     if len(grid) == 0:
         return '0'
+    #Get the bounding box of the pattern:
     bbox = getbbox(grid)
     x, y, dx, dy = bbox[0], bbox[1], bbox[2], bbox[3]
     apgcode = ''
@@ -132,8 +139,13 @@ def getgridapgcode(grid):
             for h in range(5):
                 val += ((2**h) * getcell(grid, (x + l, y + 5 * w + h)))
             apgcode += characters[val]
+    #Remove zeroes from the end of lines:
     while apgcode.count('0z') > 0:
         apgcode = apgcode.replace('0z', 'z')
+    #Use the format's compression of zeroes:
+    #w corresponds to 00
+    #x corresponds to 000
+    #y0 through yz correspond to 4 through 39 zeroes, respectively.
     for a in range(39, 3, -1):
         apgcode = apgcode.replace('0' * a, 'y' + characters[a-4])
     apgcode = apgcode.replace('000', 'x')
@@ -150,14 +162,45 @@ def getgridapgcode(grid):
             apgcode = apgcode.replace(z + 'z', 'z')
     return apgcode
 def apgcodetogrid(apgcode):
-    position = 0
+    '''Converts an apgcode to a grid.'''
+    xpos = 0
+    ypos = 0
+    readpos = 0
     grid = {}
     characters = '0123456789abcdefghijklmnopqrstuvwxyz'
+    apgcode = apgcode[apgcode.find('_')+1:]
+    #Convert special characters to zeroes:
+    for x in range(35, -1, -1):
+        apgcode = apgcode.replace('y' + characters[x], '0' * (x + 4))
+    apgcode = apgcode.replace('x', '000')
+    apgcode = apgcode.replace('w', '00')
+    print(apgcode)
+    #Go through and convert the apgcode into a grid: 
+    while readpos < len(apgcode):
+        character = apgcode[readpos]
+        try:
+            value = characters.find(character)
+        except:
+            raise ValueError('Illegal character in apgcode: '+character)
+        if value >= 0 and value < 32:
+            #We have a character denoting content.
+            for x in range(5):
+                if (value//(2**x))%2 == 1:
+                    grid[(xpos, ypos + x)] = 1
+            xpos += 1
+        elif value == 35:
+            #z denotes the next 5-row segment.
+            xpos = 0
+            ypos += 5
+        readpos += 1
+    return grid            
 def getorientations(grid):
+    '''Return all 8 transformations of a grid.'''
     transformed = [grid, transformgrid(grid, 'rot_90'), transformgrid(grid, 'rot_180'), transformgrid(grid, 'rot_270')]
     transformed += [transformgrid(transformgrid(grid, 'flip_x'), 'rot_90'), transformgrid(transformgrid(grid, 'flip_x'), 'rot_180'), transformgrid(transformgrid(grid, 'flip_x'), 'rot_270'), transformgrid(transformgrid(grid, 'flip_x'), 'identity')]
     return transformed
 def compareapgcode(code1, code2):
+    '''Compares two apgcodes, prioritising length first and using alphabetical order for tie-breaking.'''
     if code1 == code2:
         return code1
     if len(code1) < len(code2):
@@ -168,4 +211,20 @@ def compareapgcode(code1, code2):
         return code1
     if code1 > code2:
         return code2
-    
+def identifytype(data):
+    '''Determines whether pattern data is a grid, apgcode, or RLE.'''
+    if type(data) == type({}):
+        return 'grid'
+    if type(data) != type('string'):
+        raise TypeError('Class \'Pattern\' only accepts strings or dictionaries as data, not '+str(type(data)))
+    if data.count('_') == 0 or len(data) == 0 or not data.startswith('x'):
+        return 'rle'
+    #Catch out rle-exclusive characters:
+    rle_only = ['!', '$', '#']
+    for x in rle_only:
+        if x in data:
+            return 'rle'
+    if data.replace('_', '').isalnum():
+        return 'apgcode'
+    return 'rle' #The RLE parser has better error handling logic, so it is the default.
+        

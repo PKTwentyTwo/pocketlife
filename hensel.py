@@ -1,4 +1,4 @@
-'''This module contains functions for dealing with Hensel notation.'''
+'''This module contains a class, RuleHandler, for dealing with Hensel notation.'''
 import copy
 import re
 class RuleHandler:
@@ -34,8 +34,7 @@ class RuleHandler:
         cstring = ''
         birth = True
         rule = rule + '|' #Using a vertical bar to signify the end of the rulestring.
-        for x in range(len(rule)):
-            character = rule[x]
+        for character in rule:
             if character in digits or character in ['b', 's', '|']:
                 cstring = cstring.replace('b', '').replace('s', '')
                 if cstring != '':
@@ -100,15 +99,18 @@ class RuleHandler:
             num_conditions = len(newconditions[x])
             total_conditions = len(conditiondict[x[1]])
             if num_conditions == total_conditions:
+                #No need for letters if the number of conditions matches the total.
                 rulestring += x[1]
                 continue
             if num_conditions * 2 <= total_conditions:
+                #Less than or equal to half of the total conditions are present:
                 rulestring += x[1]
                 newconditions[x].sort()
                 for n in newconditions[x]:
                     rulestring += n
                 continue
             if num_conditions * 2 > total_conditions:
+                #More than half of the total conditions are present.
                 missing_conditions = list(set(conditiondict[x[1]]) - set(newconditions[x]))
                 missing_conditions.sort()
                 rulestring += x[1] + '-'
@@ -118,7 +120,9 @@ class RuleHandler:
         return rulestring
     def get_9bit(self, condition):
         '''Returns a list of 9-bit decimal numbers, used to apply INT rules.'''
-        #AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+        #I absolutely hated this part, but at least
+        #I was able to automate it partially using
+        #another Python script.
         conditions = []
         match condition:
             case 'B0':
@@ -226,6 +230,9 @@ class RuleHandler:
         if len(conditions) > 0:
             return conditions
         if condition[0] == 'S':
+            #Since I'm not about to manually add more conditions,
+            #I just add 16 to account for the central cell
+            #for survival conditions.
             newcon = condition.replace('S', 'B')
             newlist = self.get_9bit(newcon)
             newlist = [x + 16 for x in newlist]

@@ -99,6 +99,8 @@ class Lifetree:
                     if rle[position] != '\n':
                         cstring += rle[position]
         return grid
+    def apgcode_to_pt(self, apgcode):
+        return self.pattern(apgcodetogrid(apgcode))
     def grid_to_rle(self, grid, bbox):
         '''Converts a grid to the RLE of a pattern.'''
         rows = {}
