@@ -1,6 +1,7 @@
 '''The code for the lifetree and Pattern classes, which are the highest level components.'''
 #Importing modules:
 import copy
+import math
 import os
 import urllib.request
 import hashlib
@@ -319,6 +320,12 @@ class Pattern:
         pt2 = self.clone()
         pt2.grid = transformgrid(self.grid, transformation)
         return pt2
+    def centre(self):
+        '''Moves a pattern so that the bounding box is centered on the origin.'''
+        bbox = self.bbox
+        dx = math.floor((bbox[0] + bbox[2])/2)
+        dy = math.floor((bbox[1] + bbox[3])/2)
+        return self(dx, dy)
     def clone(self):
         '''Creates a copy of a pattern.'''
         thecopy = copy.deepcopy(self)

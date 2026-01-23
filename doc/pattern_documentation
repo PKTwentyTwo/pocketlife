@@ -41,6 +41,8 @@ class Pattern(builtins.object)
  |  clone(self)
  |      Creates a copy of a pattern.
  |
+ |  centre(self)
+ |      Moves a pattern so that the bounding box is centered on the origin.
  |  move(self, dx, dy)
  |      Translates a pattern by (dx, dy).
  |      e.g pt(10, 6) will translate a pattern 10 cells right and 6 cells down.
