@@ -323,8 +323,8 @@ class Pattern:
     def centre(self):
         '''Moves a pattern so that the bounding box is centered on the origin.'''
         bbox = self.bbox
-        dx = math.floor((bbox[0] + bbox[2])/2)
-        dy = math.floor((bbox[1] + bbox[3])/2)
+        dx = -math.floor((bbox[0] + bbox[2])/2)
+        dy = -math.floor((bbox[1] + bbox[3])/2)
         return self(dx, dy)
     def clone(self):
         '''Creates a copy of a pattern.'''
