@@ -173,10 +173,10 @@ class Lifetree:
                     elif sym in ['D4_x4']:
                         thesoup.append(y)
                         thesoup.append(-x-1)
-                    if sym in ['D4_x1'] & (x == y):
+                    if (sym in ['D4_x1']) & (x == y):
                         thesoup.append(y)
                         thesoup.append(-x)
-                    if sym in ['D4_x4'] & (x == y):
+                    if (sym in ['D4_x4']) & (x == y):
                         thesoup.append(y)
                         thesoup.append(-x-1)
         # Checks for diagonal symmetries:
@@ -260,12 +260,15 @@ class Lifetree:
                 continue
             soups.append(self.hashsoup(seed, symmetry))
         return soups
-    def pattern(self, rle_or_grid):
+    def pattern(self, data):
         '''Creates a new Pattern given an RLE string.'''
-        if type(rle_or_grid) == type(''):
+        datatype = identifytype(data)
+        if datatype == 'rle':
             grid = self.rle_to_grid(rle_or_grid)
+        elif datatype == 'apgcode':
+            grid = apgcodetogrid(data)
         else:
-            grid = rle_or_grid
+            grid = data
         pt = Pattern(self, grid)
         return pt
 class Pattern:
