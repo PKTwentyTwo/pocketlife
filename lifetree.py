@@ -266,7 +266,7 @@ class Lifetree:
         '''Creates a new Pattern given an RLE string.'''
         datatype = identifytype(data)
         if datatype == 'rle':
-            grid = self.rle_to_grid(rle_or_grid)
+            grid = self.rle_to_grid(data)
         elif datatype == 'apgcode':
             grid = apgcodetogrid(data)
         else:
