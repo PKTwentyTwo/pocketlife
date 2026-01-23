@@ -6,9 +6,9 @@ import urllib.request
 import hashlib
 #Other project modules:
 try:
-    from .hensel import *
+    from .hensel import RuleHandler
 except ImportError:
-    from hensel import *
+    from hensel import RuleHandler
 try:
     from .gridops import *
 except ImportError:
@@ -99,8 +99,6 @@ class Lifetree:
                     if rle[position] != '\n':
                         cstring += rle[position]
         return grid
-    def apgcode_to_pt(self, apgcode):
-        return self.pattern(apgcodetogrid(apgcode))
     def grid_to_rle(self, grid, bbox):
         '''Converts a grid to the RLE of a pattern.'''
         rows = {}
@@ -137,6 +135,9 @@ class Lifetree:
     def hashsoup(self, instring, sym):
         '''Generates a soup based on the instring, returning a Pattern.'''
         #I borrowed this function from apgsearch Py3 - see the repo (https://github.com/PKTwentyTwo/apgsearch-Py3) for the credits for this function.
+        if sym[0] in ['G', 'H'] and 'stdin' not in sym.lower() and len(sym) > 1:
+            sym = sym[0].replace('G', 'C').replace('H', 'D') + sym[1:]
+            #Adaptation to account for GPU symmetries.
         s = hashlib.sha256(instring.encode('utf-8')).digest()
         thesoup = []
         if sym in ['D2_x', 'D8_1', 'D8_4']:
@@ -344,6 +345,12 @@ class Pattern:
                 raise ValueError('Pattern does not become periodic within '+str(maxgens)+' generations.')
                 return -1
         return gens
+    def save(self, filename = 'pattern.rle'):
+        '''Saves the RLE of a pattern in a file.'''
+        rle = self.rle
+        f = open(filename, 'w', encoding = 'utf-8')
+        f.write(rle)
+        f.close()
     @property
     def rle(self):
         '''The Run Length Encoding (RLE) of a pattern.'''

@@ -22,14 +22,14 @@ def firstcell(grid):
     exes =  [coord[0] for coord in grid if coord[1] == topcoord]
     leftcoord = min(exes)
     return (leftcoord, topcoord)
-def transformgrid(grid, transformgridation):
+def transformgrid(grid, transformation):
     '''Apply a transformation to a grid.'''
     grid = cleanupgrid(grid)
     newgrid = {}
-    transformgridations = ['flip_x', 'flip_y', 'identity', 'rot_90', 'rot_180', 'rot_270', 'flip_xy', 'rcw', 'rccw']
-    if transformgridation not in transformgridations:
-        raise ValueError('Only the following transformgridations are supported: '+str(transformgridations))
-    match transformgridation:
+    transformations=['flip_x','flip_y','identity','rot_90','rot_180','rot_270','flip_xy','rcw','rccw']
+    if transformation not in transformations:
+        raise ValueError('Only the following transformations are supported: '+str(transformations))
+    match transformation:
         case 'flip_x':
             newgrid = {(-x, y):1 for x, y in grid}
         case 'flip_y':
@@ -175,14 +175,14 @@ def apgcodetogrid(apgcode):
     apgcode = apgcode.replace('x', '000')
     apgcode = apgcode.replace('w', '00')
     print(apgcode)
-    #Go through and convert the apgcode into a grid: 
+    #Go through and convert the apgcode into a grid:
     while readpos < len(apgcode):
         character = apgcode[readpos]
         try:
             value = characters.find(character)
         except:
             raise ValueError('Illegal character in apgcode: '+character)
-        if value >= 0 and value < 32:
+        if 0 <= value < 32:
             #We have a character denoting content.
             for x in range(5):
                 if (value//(2**x))%2 == 1:
@@ -193,7 +193,7 @@ def apgcodetogrid(apgcode):
             xpos = 0
             ypos += 5
         readpos += 1
-    return grid            
+    return grid
 def getorientations(grid):
     '''Return all 8 transformations of a grid.'''
     transformed = [grid, transformgrid(grid, 'rot_90'), transformgrid(grid, 'rot_180'), transformgrid(grid, 'rot_270')]
@@ -211,6 +211,8 @@ def compareapgcode(code1, code2):
         return code1
     if code1 > code2:
         return code2
+    #This bit should be unreachable:
+    return code1
 def identifytype(data):
     '''Determines whether pattern data is a grid, apgcode, or RLE.'''
     if type(data) == type({}):
