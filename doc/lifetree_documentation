@@ -10,7 +10,7 @@ class Lifetree(builtins.object)
  |
  |  __init__(self, rule='b3s23')
  |      Initialize self.  See help(type(self)) for accurate signature.
- |      This function should be called using pocketlife.lifetree().
+ |      This function should be called using pocketpylife.lifetree().
  |
  |  download_soups(self, apgcode, sym='C1')
  |      Returns a list of soups (as Patterns) producing a target object.
