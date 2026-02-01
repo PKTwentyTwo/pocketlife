@@ -174,7 +174,6 @@ def apgcodetogrid(apgcode):
         apgcode = apgcode.replace('y' + characters[x], '0' * (x + 4))
     apgcode = apgcode.replace('x', '000')
     apgcode = apgcode.replace('w', '00')
-    print(apgcode)
     #Go through and convert the apgcode into a grid:
     while readpos < len(apgcode):
         character = apgcode[readpos]
