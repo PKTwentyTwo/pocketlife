@@ -100,13 +100,13 @@ def applyop(grid1, grid2, operation):
     set2 = set(grid2)
     match operation:
         case 'add':
-            set3 = set1 + set2
+            set3 = set1.union(set2)
             newgrid = {x:1 for x in set3}
         case 'sub':
-            set3 = set1 - set2
+            set3 = set1.difference(set2)
             newgrid = {x:1 for x in set3}
         case 'xor':
-            set3 = (set1 - set2) + (set2 - set1)
+            set3 = (set1.difference(set2)).union((set2.difference(set1)))
             newgrid = {x:1 for x in set3}
     return newgrid
 def getcell(grid, tupleused):
