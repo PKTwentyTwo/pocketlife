@@ -75,7 +75,6 @@ class Lifetree:
                             integer = int(cstring)
                         except:
                             raise Warning('RLE is incorrectly formatted, defaulting to empty pattern...')
-                            print(cstring)
                             return {}
                     else:
                         integer = 1
@@ -455,10 +454,9 @@ class Pattern:
     @property
     def apgcode(self):
         '''A unique identifier for periodic patterns.'''
-        print(getgridapgcode(self.grid))
-        period = self.period
-        print(period)
-        if period == -1:
+        try:
+            period = self.period
+        except:
             return 'aperiodic'
         pt = self.clone()
         gridphases = []
