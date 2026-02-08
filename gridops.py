@@ -29,25 +29,24 @@ def transformgrid(grid, transformation):
     transformations=['flip_x','flip_y','identity','rot_90','rot_180','rot_270','flip_xy','rcw','rccw']
     if transformation not in transformations:
         raise ValueError('Only the following transformations are supported: '+str(transformations))
-    match transformation:
-        case 'flip_x':
-            newgrid = {(-x, y):1 for x, y in grid}
-        case 'flip_y':
-            newgrid = {(x, -y):1 for x, y in grid}
-        case 'identity':
-            newgrid = {(x, y):1 for x, y in grid}
-        case 'rot_90':
-            newgrid = {(-y, x):1 for x, y in grid}
-        case 'rot_180':
-            newgrid = {(-x, -y):1 for x, y in grid}
-        case 'rot_270':
-            newgrid = {(y, -x):1 for x, y in grid}
-        case 'flip_xy':
-            newgrid = {(-x, -y):1 for x, y in grid}
-        case 'rcw':
-            newgrid = {(-y, x):1 for x, y in grid}
-        case 'rccw':
-            newgrid = {(y, -x):1 for x, y in grid}
+    if transformation ==  'flip_x':
+        newgrid = {(-x, y):1 for x, y in grid}
+    elif transformation ==  'flip_y':
+        newgrid = {(x, -y):1 for x, y in grid}
+    elif transformation ==  'identity':
+        newgrid = {(x, y):1 for x, y in grid}
+    elif transformation ==  'rot_90':
+        newgrid = {(-y, x):1 for x, y in grid}
+    elif transformation ==  'rot_180':
+        newgrid = {(-x, -y):1 for x, y in grid}
+    elif transformation ==  'rot_270':
+        newgrid = {(y, -x):1 for x, y in grid}
+    elif transformation ==  'flip_xy':
+        newgrid = {(-x, -y):1 for x, y in grid}
+    elif transformation ==  'rcw':
+        newgrid = {(-y, x):1 for x, y in grid}
+    elif transformation ==  'rccw':
+        newgrid = {(y, -x):1 for x, y in grid}
     return newgrid
 def getbbox(grid):
     '''Returns the bounding box of a grid in the form [x, y, dx, dy].'''
@@ -98,16 +97,15 @@ def applyop(grid1, grid2, operation):
     newgrid = {}
     set1 = set(grid1)
     set2 = set(grid2)
-    match operation:
-        case 'add':
-            set3 = set1.union(set2)
-            newgrid = {x:1 for x in set3}
-        case 'sub':
-            set3 = set1.difference(set2)
-            newgrid = {x:1 for x in set3}
-        case 'xor':
-            set3 = (set1.difference(set2)).union((set2.difference(set1)))
-            newgrid = {x:1 for x in set3}
+    if operation ==  'add':
+        set3 = set1.union(set2)
+        newgrid = {x:1 for x in set3}
+    elif operation ==  'sub':
+        set3 = set1.difference(set2)
+        newgrid = {x:1 for x in set3}
+    elif operation ==  'xor':
+        set3 = (set1.difference(set2)).union((set2.difference(set1)))
+        newgrid = {x:1 for x in set3}
     return newgrid
 def getcell(grid, tupleused):
     '''Gets the value of a cell.'''
@@ -177,9 +175,8 @@ def apgcodetogrid(apgcode):
     #Go through and convert the apgcode into a grid:
     while readpos < len(apgcode):
         character = apgcode[readpos]
-        try:
-            value = characters.find(character)
-        except:
+        value = characters.find(character)
+        if value < 0:
             raise ValueError('Illegal character in apgcode: '+character)
         if 0 <= value < 32:
             #We have a character denoting content.

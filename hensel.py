@@ -1,5 +1,4 @@
 '''This module contains a class, RuleHandler, for dealing with Hensel notation.'''
-import copy
 import re
 class RuleHandler:
     '''Responsible for handling Hensel notation.'''
@@ -48,7 +47,7 @@ class RuleHandler:
                     else:
                         subconditions = cstring[1:]
                         if subconditions[0] == '-':
-                            temp = copy.deepcopy(conditiondict[digit])
+                            temp = conditiondict[digit][:]
                             for x in cstring[2:]:
                                 if x in temp:
                                     temp.remove(x)
@@ -71,7 +70,7 @@ class RuleHandler:
             if character == 's':
                 birth = False
             cstring = cstring + character
-        for x in conditions:
+        for x in conditions[:]:
             if conditions.count(x) > 1:
                 conditions.remove(x)
         return conditions
@@ -124,109 +123,108 @@ class RuleHandler:
         #I was able to automate it partially using
         #another Python script.
         conditions = []
-        match condition:
-            case 'B0':
-                conditions = [0]
-            case 'B1e':
-                conditions = [2, 8, 32, 128]
-            case 'B1c':
-                conditions = [1, 4, 64, 256]
-            case 'B2a':
-                conditions = [3, 6, 9, 36, 72, 192, 288, 384]
-            case 'B2e':
-                conditions = [10, 34, 136, 160]
-            case 'B2c':
-                conditions = [5, 65, 260, 320]
-            case 'B2i':
-                conditions = [40, 130]
-            case 'B2k':
-                conditions = [12, 33, 66, 96, 129, 132, 258, 264]
-            case 'B2n':
-                conditions = [68, 257]
-            case 'B3a':
-                conditions = [11, 38, 200, 416]
-            case 'B3c':
-                conditions = [69, 261, 321, 324]
-            case 'B3e':
-                conditions = [42, 138, 162, 168]
-            case 'B3i':
-                conditions = [7, 73, 292, 448]
-            case 'B3j':
-                conditions = [14, 35, 74, 137, 164, 224, 290, 392]
-            case 'B3k':
-                conditions = [98, 140, 161, 266]
-            case 'B3n':
-                conditions = [13, 37, 67, 193, 262, 328, 352, 388]
-            case 'B3q':
-                conditions = [70, 76, 100, 196, 259, 265, 289, 385]
-            case 'B3r':
-                conditions = [41, 44, 104, 131, 134, 194, 296, 386]
-            case 'B3y':
-                conditions = [97, 133, 268, 322]
-            case 'B4a':
-                conditions = [15, 39, 75, 201, 294, 420, 456, 480]
-            case 'B4c':
-                conditions = [325]
-            case 'B4e':
-                conditions = [170]
-            case 'B4i':
-                conditions = [45, 195, 360, 390]
-            case 'B4j':
-                conditions = [106, 142, 163, 169, 172, 226, 298, 394]
-            case 'B4k':
-                conditions = [99, 141, 165, 225, 270, 330, 354, 396]
-            case 'B4n':
-                conditions = [71, 77, 263, 293, 329, 356, 449, 452]
-            case 'B4q':
-                conditions = [102, 204, 267, 417]
-            case 'B4r':
-                conditions = [43, 46, 139, 166, 202, 232, 418, 424]
-            case 'B4t':
-                conditions = [105, 135, 300, 450]
-            case 'B4w':
-                conditions = [94, 244, 307, 409]
-            case 'B4y':
-                conditions = [101, 197, 269, 323, 326, 332, 353, 389]
-            case 'B4z':
-                conditions = [108, 198, 297, 387]
-            case 'B5a':
-                conditions = [79, 295, 457, 484]
-            case 'B5c':
-                conditions = [171, 174, 234, 426]
-            case 'B5e':
-                conditions = [327, 333, 357, 453]
-            case 'B5i':
-                conditions = [47, 203, 422, 488]
-            case 'B5j':
-                conditions = [103, 205, 271, 331, 358, 421, 460, 481]
-            case 'B5k':
-                conditions = [229, 334, 355, 397]
-            case 'B5n':
-                conditions = [107, 143, 167, 233, 302, 428, 458, 482]
-            case 'B5q':
-                conditions = [110, 206, 230, 236, 299, 395, 419, 425]
-            case 'B5r':
-                conditions = [109, 199, 301, 361, 364, 391, 451, 454]
-            case 'B5y':
-                conditions = [173, 227, 362, 398]
-            case 'B6a':
-                conditions = [111, 207, 303, 423, 459, 486, 489, 492]
-            case 'B6c':
-                conditions = [175, 235, 430, 490]
-            case 'B6e':
-                conditions = [335, 359, 461, 485]
-            case 'B6i':
-                conditions = [365, 455]
-            case 'B6k':
-                conditions = [231, 237, 363, 366, 399, 429, 462, 483]
-            case 'B6n':
-                conditions = [238, 427]
-            case 'B7c':
-                conditions = [239, 431, 491, 494]
-            case 'B7e':
-                conditions = [367, 463, 487, 493]
-            case 'B8':
-                conditions = [495]
+        if condition ==  'B0':
+            conditions = [0]
+        elif condition ==  'B1e':
+            conditions = [2, 8, 32, 128]
+        elif condition ==  'B1c':
+            conditions = [1, 4, 64, 256]
+        elif condition ==  'B2a':
+            conditions = [3, 6, 9, 36, 72, 192, 288, 384]
+        elif condition ==  'B2e':
+            conditions = [10, 34, 136, 160]
+        elif condition ==  'B2c':
+            conditions = [5, 65, 260, 320]
+        elif condition ==  'B2i':
+            conditions = [40, 130]
+        elif condition ==  'B2k':
+            conditions = [12, 33, 66, 96, 129, 132, 258, 264]
+        elif condition ==  'B2n':
+            conditions = [68, 257]
+        elif condition ==  'B3a':
+            conditions = [11, 38, 200, 416]
+        elif condition ==  'B3c':
+            conditions = [69, 261, 321, 324]
+        elif condition ==  'B3e':
+            conditions = [42, 138, 162, 168]
+        elif condition ==  'B3i':
+            conditions = [7, 73, 292, 448]
+        elif condition ==  'B3j':
+            conditions = [14, 35, 74, 137, 164, 224, 290, 392]
+        elif condition ==  'B3k':
+            conditions = [98, 140, 161, 266]
+        elif condition ==  'B3n':
+            conditions = [13, 37, 67, 193, 262, 328, 352, 388]
+        elif condition ==  'B3q':
+            conditions = [70, 76, 100, 196, 259, 265, 289, 385]
+        elif condition ==  'B3r':
+            conditions = [41, 44, 104, 131, 134, 194, 296, 386]
+        elif condition ==  'B3y':
+            conditions = [97, 133, 268, 322]
+        elif condition ==  'B4a':
+            conditions = [15, 39, 75, 201, 294, 420, 456, 480]
+        elif condition ==  'B4c':
+            conditions = [325]
+        elif condition ==  'B4e':
+            conditions = [170]
+        elif condition ==  'B4i':
+            conditions = [45, 195, 360, 390]
+        elif condition ==  'B4j':
+            conditions = [106, 142, 163, 169, 172, 226, 298, 394]
+        elif condition ==  'B4k':
+            conditions = [99, 141, 165, 225, 270, 330, 354, 396]
+        elif condition ==  'B4n':
+            conditions = [71, 77, 263, 293, 329, 356, 449, 452]
+        elif condition ==  'B4q':
+            conditions = [102, 204, 267, 417]
+        elif condition ==  'B4r':
+            conditions = [43, 46, 139, 166, 202, 232, 418, 424]
+        elif condition ==  'B4t':
+            conditions = [105, 135, 300, 450]
+        elif condition ==  'B4w':
+            conditions = [94, 244, 307, 409]
+        elif condition ==  'B4y':
+            conditions = [101, 197, 269, 323, 326, 332, 353, 389]
+        elif condition ==  'B4z':
+            conditions = [108, 198, 297, 387]
+        elif condition ==  'B5a':
+            conditions = [79, 295, 457, 484]
+        elif condition ==  'B5c':
+            conditions = [171, 174, 234, 426]
+        elif condition ==  'B5e':
+            conditions = [327, 333, 357, 453]
+        elif condition ==  'B5i':
+            conditions = [47, 203, 422, 488]
+        elif condition ==  'B5j':
+            conditions = [103, 205, 271, 331, 358, 421, 460, 481]
+        elif condition ==  'B5k':
+            conditions = [229, 334, 355, 397]
+        elif condition ==  'B5n':
+            conditions = [107, 143, 167, 233, 302, 428, 458, 482]
+        elif condition ==  'B5q':
+            conditions = [110, 206, 230, 236, 299, 395, 419, 425]
+        elif condition ==  'B5r':
+            conditions = [109, 199, 301, 361, 364, 391, 451, 454]
+        elif condition ==  'B5y':
+            conditions = [173, 227, 362, 398]
+        elif condition ==  'B6a':
+            conditions = [111, 207, 303, 423, 459, 486, 489, 492]
+        elif condition ==  'B6c':
+            conditions = [175, 235, 430, 490]
+        elif condition ==  'B6e':
+            conditions = [335, 359, 461, 485]
+        elif condition ==  'B6i':
+            conditions = [365, 455]
+        elif condition ==  'B6k':
+            conditions = [231, 237, 363, 366, 399, 429, 462, 483]
+        elif condition ==  'B6n':
+            conditions = [238, 427]
+        elif condition ==  'B7c':
+            conditions = [239, 431, 491, 494]
+        elif condition ==  'B7e':
+            conditions = [367, 463, 487, 493]
+        elif condition ==  'B8':
+            conditions = [495]
         if len(conditions) > 0:
             return conditions
         if condition[0] == 'S':

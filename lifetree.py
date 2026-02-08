@@ -2,7 +2,6 @@
 #Importing modules:
 import copy
 import math
-import os
 import urllib.request
 import hashlib
 #Other project modules:
@@ -44,8 +43,9 @@ class Lifetree:
         return newgrid
     def advance(self, grid, gens):
         '''Advance a grid a specific number of generations.'''
+        adv = self.advanceone
         for _ in range(gens):
-            grid = self.advanceone(grid)
+            grid = adv(grid)
         return grid
     def rle_to_grid(self, rle):
         '''Converts an RLE to a dictionary format.'''
@@ -73,23 +73,22 @@ class Lifetree:
                     if cstring != '':
                         try:
                             integer = int(cstring)
-                        except:
-                            raise Warning('RLE is incorrectly formatted, defaulting to empty pattern...')
+                        except ValueError:
+                            raise Warning('Invalid RLE format, defaulting to empty pattern...')
                             return {}
                     else:
                         integer = 1
-                    match operator:
-                        case 'o':
-                            for n in range(integer):
-                                grid[(x+n, y)] = 1
-                            x += integer
-                        case 'b':
-                            x += integer
-                        case '$':
-                            x = 0
-                            y += integer
-                        case '!':
-                            break
+                    if operator ==  'o':
+                        for n in range(integer):
+                            grid[(x+n, y)] = 1
+                        x += integer
+                    elif operator ==  'b':
+                        x += integer
+                    elif operator ==  '$':
+                        x = 0
+                        y += integer
+                    elif operator ==  '!':
+                        break
                     cstring = ''
             else:
                 if rle[position] not in digits:
@@ -129,7 +128,7 @@ class Lifetree:
             while rle.count(x * (longestchain+1)) > 0:
                 longestchain += 1
             if longestchain >= 2:
-                for n in range(longestchain, 2, -1):
+                for n in range(longestchain, 1, -1):
                     rle = rle.replace(x * n, str(n)+x)
         return rle
     def hashsoup(self, instring, sym):
@@ -242,7 +241,7 @@ class Lifetree:
         '''Downloads a glider synthesis from Catagolue.'''
         if self.rule != 'b3s23':
             raise ValueError('Can only download syntheses if configured for b3s23.')
-        c = urllib.request.urlopen(CATAGOLUE_URL + '/textsamples/' + apgcode + '/' + 'b3s23/synthesis')
+        c = urllib.request.urlopen(CATAGOLUE_URL+'/textsamples/'+apgcode+'/'+'b3s23/synthesis')
         response = c.read().decode('utf-8')
         if 'x' in response:
             return response
@@ -274,7 +273,7 @@ class Lifetree:
         return pt
 class Pattern:
     '''This is the class used for manipulation of patterns.'''
-    def __init__(self, lifetree, grid={}):
+    def __init__(self, lifetree, grid=dict()):
         '''This method should only be called by a lifetree.'''
         self.lifetree = lifetree
         self.grid = grid
