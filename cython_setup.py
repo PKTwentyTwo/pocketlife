@@ -3,6 +3,7 @@ from setuptools import setup, Extension
 from Cython.Build import cythonize
 import os
 import sys
+import platform
 def cython_compile():
     '''Compiles a Cython library to improve speed.
 Requires that Cython is installed as a Python package.'''
@@ -29,12 +30,15 @@ if __name__ == '__main__':
         code = f.read()
     with open('pylifetree.pyx', 'w', encoding='utf-8') as f:
         f.write(code)
+    compilerargs = ["-O3", "-march=native", "-ffast-math"]
+    if platform.uname()[0] == 'Windows':
+        compilerargs = ['/O2']
     extensions = [
         Extension(
             name="pylifetree",
             sources=["pylifetree.pyx"],
             language="c",
-            extra_compile_args=["-O3", "-march=native", "-ffast-math"],
+            extra_compile_args=compilerargs,
         )
     ]
 
