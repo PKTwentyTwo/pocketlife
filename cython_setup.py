@@ -5,12 +5,10 @@ import platform
 import os
 import sys
 #Create a .pyx file:
-f = open('lifetree.py', 'r', encoding='utf-8')
-code = f.read()
-f.close()
-f = open('pylifetree.pyx', 'w', encoding='utf-8')
-f.write(code)
-f.close()
+with open('lifetree.py', 'r', encoding='utf-8') as f:
+    code = f.read()
+with open('pylifetree.pyx', 'w', encoding='utf-8') as f:
+    f.write(code)
 extensions = [
     Extension(
         name="pylifetree",
@@ -33,4 +31,15 @@ setup(
 #Rename the output file:
 files = os.listdir(os.getcwd())
 files = [x for x in files if x.endswith('.so') or x.endswith('.pyd')]
-print(files)
+if len(files) == 0:
+    raise FileNotFoundError('Could not locate compiled .so or .pyd!')
+file = files[0]
+if file.endswith('.so'):
+    extension = '.so'
+else:
+    extension = '.pyd'
+with open(file, 'rb') as f:
+    code = f.read()
+os.remove(file)
+with open('pylifetree' + extension, 'wb') as f:
+    f.write(code)
