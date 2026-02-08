@@ -34,6 +34,7 @@ if __name__ == '__main__':
             name="pylifetree",
             sources=["pylifetree.pyx"],
             language="c",
+            extra_compile_args=["-O3", "-march=native", "-ffast-math"],
         )
     ]
 
@@ -45,6 +46,7 @@ if __name__ == '__main__':
                 "language_level": "3",
                 "boundscheck": False,
                 "wraparound": False,
+                "cdivision": True
             }
         ),
     )
