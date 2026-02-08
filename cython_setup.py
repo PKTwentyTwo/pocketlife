@@ -1,7 +1,15 @@
+'''Used to compile a .so or .pyd to improve speed.'''
 from setuptools import setup, Extension
 from Cython.Build import cythonize
+import platform
 import sys
-
+#Create a .pyx file:
+f = open('lifetree.py', 'r', encoding='utf-8')
+code = f.read()
+f.close()
+f = open('pylifetree.pyx', 'w', encoding='utf-8')
+f.write(code)
+f.close()
 extensions = [
     Extension(
         name="pylifetree",
@@ -21,4 +29,7 @@ setup(
         }
     ),
 )
-print('a')
+#Rename the output file:
+files = os.listdir(os.getcwd())
+files = [x for x in files if x.endswith('.so') or x.endswith('.pyd')]
+print(files)
