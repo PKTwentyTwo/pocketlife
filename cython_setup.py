@@ -2,6 +2,7 @@
 from setuptools import setup, Extension
 from Cython.Build import cythonize
 import platform
+import os
 import sys
 #Create a .pyx file:
 f = open('lifetree.py', 'r', encoding='utf-8')
