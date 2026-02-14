@@ -313,6 +313,17 @@ class Pattern:
     def __ixor__(self, other):
         '''Returns the XOR of two patterns.'''
         return self.__xor__(other)
+    def __eq__(self, other):
+        '''Checks if two patterns are equal, including their location.'''
+        if type(self) != type(other):
+            return False
+        if self.digest != other.digest:
+            return False
+        if (self - other).population != 0:
+            return False
+        if (other - self).population != 0:
+            return False
+        return True
     def transform(self, transformation):
         '''Transforms a pattern relative to the origin.'''
         pt2 = self.clone()
