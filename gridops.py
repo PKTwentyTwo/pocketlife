@@ -149,11 +149,11 @@ def getgridapgcode(grid):
     apgcode = apgcode.replace('000', 'x')
     apgcode = apgcode.replace('00', 'w')
     forbiddenend = ['w', 'x', 'z', '0', 'y']
-    forbiddenend += [n + '0' for n in forbiddenend]
+    #forbiddenend += [n + '0' for n in forbiddenend]
     forbiddenend += ['y' + a for a in characters]
     forbiddenbeforez = ['x']
     if len(apgcode) > 0:
-        while (apgcode[-1] in forbiddenend or apgcode[-2:-1] in forbiddenend):
+        while (apgcode[-1] in forbiddenend or apgcode[-2:] in forbiddenend):
             apgcode = apgcode[:-1]
     for z in forbiddenbeforez:
         while apgcode.count(z + 'z') > 0:
