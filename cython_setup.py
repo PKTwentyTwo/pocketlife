@@ -8,7 +8,7 @@ def cython_compile():
     '''Compiles a Cython library to improve speed.
 Requires that Cython is installed as a Python package.'''
     executable = sys.executable
-    cmd = executable + ' ' + __file__ + ' build_ext --inplace'
+    cmd = '\"' + executable + '\" \"' + __file__ + '\" build_ext --inplace'
     print('Attempting to compile using following command:')
     print(cmd)
     os.system(cmd)
