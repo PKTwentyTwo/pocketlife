@@ -14,5 +14,9 @@ Try running cython_compile() or remove_cython_compilation()''')
 else:
     from .lifetree import Lifetree as lifetree
 #Import the compiler regardless:
-from .cython_setup import cython_compile, remove_cython_compilation
-__all__ = ['lifetree', 'cython_compile', 'remove_cython_compilation']
+try:
+    from .cython_setup import cython_compile, remove_cython_compilation
+    __all__ = ['lifetree', 'cython_compile', 'remove_cython_compilation']
+except:
+    __all__ = ['lifetree']
+
