@@ -137,106 +137,112 @@ class Lifetree:
         if sym[0] in ['G', 'H'] and 'stdin' not in sym.lower() and len(sym) > 1:
             sym = sym[0].replace('G', 'C').replace('H', 'D') + sym[1:]
             #Adaptation to account for GPU symmetries.
-        s = hashlib.sha256(instring.encode('utf-8')).digest()
-        thesoup = []
-        if sym in ['D2_x', 'D8_1', 'D8_4']:
-            d = 1
-        elif sym in ['D4_x1', 'D4_x4']:
-            d = 2
+        if 'stdin' not in sym.lower():
+            s = hashlib.sha256(instring.encode('utf-8')).digest()
+            thesoup = []
+            if sym in ['D2_x', 'D8_1', 'D8_4']:
+                d = 1
+            elif sym in ['D4_x1', 'D4_x4']:
+                d = 2
+            else:
+                d = 0
+            for j in range(32):
+                t = s[j]
+                for k in range(8):
+                    if sym in ['8x32']:
+                        x = k + 8*(j % 4)
+                        y = int(j / 4)
+                    elif sym in ['4x64']:  
+                        x = k + 8*(j % 8)
+                        y = int(j / 8)
+                    elif sym in ['2x128']:
+                        x = k + 8*(j % 16)
+                        y = int(j / 16)
+                    elif sym in ['1x256']:
+                        x = k + 8*(j % 32)
+                        y = int(j / 32)
+                    else:
+                        x = k + 8*(j % 2)
+                        y = int(j / 2)
+                    if (t & (1 << (7 - k))):
+                        if (d == 0) | (x >= y):
+                            thesoup.append(x)
+                            thesoup.append(y)
+                        elif sym in ['D4_x1']:
+                            thesoup.append(y)
+                            thesoup.append(-x)
+                        elif sym in ['D4_x4']:
+                            thesoup.append(y)
+                            thesoup.append(-x-1)
+                        if (sym in ['D4_x1']) & (x == y):
+                            thesoup.append(y)
+                            thesoup.append(-x)
+                        if (sym in ['D4_x4']) & (x == y):
+                            thesoup.append(y)
+                            thesoup.append(-x-1)
+            # Checks for diagonal symmetries:
+            if (d >= 1):
+                for x in range(0, len(thesoup), 2):
+                    thesoup.append(thesoup[x+1])
+                    thesoup.append(thesoup[x])
+                if d == 2:
+                    if sym == 'D4_x1':
+                        for x in range(0, len(thesoup), 2):
+                            thesoup.append(-thesoup[x+1])
+                            thesoup.append(-thesoup[x])
+                    else:
+                        for x in range(0, len(thesoup), 2):
+                            thesoup.append(-thesoup[x+1] - 1)
+                            thesoup.append(-thesoup[x] - 1)
+            # Checks for orthogonal x symmetry:
+            if sym in ['D2_+1', 'D4_+1', 'D4_+2']:
+                for x in range(0, len(thesoup), 2):
+                    thesoup.append(thesoup[x])
+                    thesoup.append(-thesoup[x+1])
+            elif sym in ['D2_+2', 'D4_+4']:
+                for x in range(0, len(thesoup), 2):
+                    thesoup.append(thesoup[x])
+                    thesoup.append(-thesoup[x+1] - 1)
+            # Checks for orthogonal y symmetry:
+            if sym in ['D4_+1']:
+                for x in range(0, len(thesoup), 2):
+                    thesoup.append(-thesoup[x])
+                    thesoup.append(thesoup[x+1])
+            elif sym in ['D4_+2', 'D4_+4']:
+                for x in range(0, len(thesoup), 2):
+                    thesoup.append(-thesoup[x] - 1)
+                    thesoup.append(thesoup[x+1])
+            # Checks for rotate2 symmetry:
+            if sym in ['C2_1', 'C4_1', 'D8_1']:
+                for x in range(0, len(thesoup), 2):
+                    thesoup.append(-thesoup[x])
+                    thesoup.append(-thesoup[x+1])
+            elif sym in ['C2_2']:
+                for x in range(0, len(thesoup), 2):
+                    thesoup.append(-thesoup[x])
+                    thesoup.append(-thesoup[x+1]-1)
+            elif sym in ['C2_4', 'C4_4', 'D8_4']:
+                for x in range(0, len(thesoup), 2):
+                    thesoup.append(-thesoup[x]-1)
+                    thesoup.append(-thesoup[x+1]-1)
+            # Checks for rotate4 symmetry:
+            if (sym in ['C4_1', 'D8_1']):
+                for x in range(0, len(thesoup), 2):
+                    thesoup.append(thesoup[x+1])
+                    thesoup.append(-thesoup[x])
+            elif (sym in ['C4_4', 'D8_4']):
+                for x in range(0, len(thesoup), 2):
+                    thesoup.append(thesoup[x+1])
+                    thesoup.append(-thesoup[x]-1)
+            thesoup2 = {}
+            for x in range(len(thesoup)//2):
+                thesoup2[(thesoup[2*x], thesoup[2*x+1])] = 1
+            return self.pattern(thesoup2)
         else:
-            d = 0
-        for j in range(32):
-            t = s[j]
-            for k in range(8):
-                if sym in ['8x32']:
-                    x = k + 8*(j % 4)
-                    y = int(j / 4)
-                elif sym in ['4x64']:  
-                    x = k + 8*(j % 8)
-                    y = int(j / 8)
-                elif sym in ['2x128']:
-                    x = k + 8*(j % 16)
-                    y = int(j / 16)
-                elif sym in ['1x256']:
-                    x = k + 8*(j % 32)
-                    y = int(j / 32)
-                else:
-                    x = k + 8*(j % 2)
-                    y = int(j / 2)
-                if (t & (1 << (7 - k))):
-                    if (d == 0) | (x >= y):
-                        thesoup.append(x)
-                        thesoup.append(y)
-                    elif sym in ['D4_x1']:
-                        thesoup.append(y)
-                        thesoup.append(-x)
-                    elif sym in ['D4_x4']:
-                        thesoup.append(y)
-                        thesoup.append(-x-1)
-                    if (sym in ['D4_x1']) & (x == y):
-                        thesoup.append(y)
-                        thesoup.append(-x)
-                    if (sym in ['D4_x4']) & (x == y):
-                        thesoup.append(y)
-                        thesoup.append(-x-1)
-        # Checks for diagonal symmetries:
-        if (d >= 1):
-            for x in range(0, len(thesoup), 2):
-                thesoup.append(thesoup[x+1])
-                thesoup.append(thesoup[x])
-            if d == 2:
-                if sym == 'D4_x1':
-                    for x in range(0, len(thesoup), 2):
-                        thesoup.append(-thesoup[x+1])
-                        thesoup.append(-thesoup[x])
-                else:
-                    for x in range(0, len(thesoup), 2):
-                        thesoup.append(-thesoup[x+1] - 1)
-                        thesoup.append(-thesoup[x] - 1)
-        # Checks for orthogonal x symmetry:
-        if sym in ['D2_+1', 'D4_+1', 'D4_+2']:
-            for x in range(0, len(thesoup), 2):
-                thesoup.append(thesoup[x])
-                thesoup.append(-thesoup[x+1])
-        elif sym in ['D2_+2', 'D4_+4']:
-            for x in range(0, len(thesoup), 2):
-                thesoup.append(thesoup[x])
-                thesoup.append(-thesoup[x+1] - 1)
-        # Checks for orthogonal y symmetry:
-        if sym in ['D4_+1']:
-            for x in range(0, len(thesoup), 2):
-                thesoup.append(-thesoup[x])
-                thesoup.append(thesoup[x+1])
-        elif sym in ['D4_+2', 'D4_+4']:
-            for x in range(0, len(thesoup), 2):
-                thesoup.append(-thesoup[x] - 1)
-                thesoup.append(thesoup[x+1])
-        # Checks for rotate2 symmetry:
-        if sym in ['C2_1', 'C4_1', 'D8_1']:
-            for x in range(0, len(thesoup), 2):
-                thesoup.append(-thesoup[x])
-                thesoup.append(-thesoup[x+1])
-        elif sym in ['C2_2']:
-            for x in range(0, len(thesoup), 2):
-                thesoup.append(-thesoup[x])
-                thesoup.append(-thesoup[x+1]-1)
-        elif sym in ['C2_4', 'C4_4', 'D8_4']:
-            for x in range(0, len(thesoup), 2):
-                thesoup.append(-thesoup[x]-1)
-                thesoup.append(-thesoup[x+1]-1)
-        # Checks for rotate4 symmetry:
-        if (sym in ['C4_1', 'D8_1']):
-            for x in range(0, len(thesoup), 2):
-                thesoup.append(thesoup[x+1])
-                thesoup.append(-thesoup[x])
-        elif (sym in ['C4_4', 'D8_4']):
-            for x in range(0, len(thesoup), 2):
-                thesoup.append(thesoup[x+1])
-                thesoup.append(-thesoup[x]-1)
-        thesoup2 = {}
-        for x in range(len(thesoup)//2):
-            thesoup2[(thesoup[2*x], thesoup[2*x+1])] = 1
-        return self.pattern(thesoup2)
+            if instring.count('-') == 1:
+                rle = instring.split('\n')[1]
+                return self.pattern(rle)
+        return self.pattern('b!')
     def download_synth(self, apgcode):
         '''Downloads a glider synthesis from Catagolue.'''
         if self.rule != 'b3s23':
