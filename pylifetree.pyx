@@ -55,7 +55,7 @@ class Lifetree:
         cdef int position = -1
         digits = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
         cstring = ''
-        cdef bool isnum = False
+        isnum = False
         while position + 1 < len(rle):
             position += 1
             if not isnum:
