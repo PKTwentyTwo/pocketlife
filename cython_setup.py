@@ -26,10 +26,6 @@ if __name__ == '__main__':
     #Create a .pyx file:
     oldcwd = os.getcwd()
     os.chdir(os.path.dirname(__file__))
-    with open('lifetree.py', 'r', encoding='utf-8') as f:
-        code = f.read()
-    with open('pylifetree.pyx', 'w', encoding='utf-8') as f:
-        f.write(code)
     compilerargs = ["-O3", "-march=native", "-ffast-math"]
     if platform.uname()[0] == 'Windows':
         compilerargs = ['/O2']
@@ -66,7 +62,6 @@ if __name__ == '__main__':
         extension = '.pyd'
     with open(file, 'rb') as f:
         code = f.read()
-    os.remove(file)
     with open('pylifetree' + extension, 'wb') as f:
         f.write(code)
     os.chdir(oldcwd)
