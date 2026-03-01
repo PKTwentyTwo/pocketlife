@@ -11,3 +11,7 @@ Cellular automata functionality is implemented through the class ```Lifetree```.
 The syntax is very similar to lifelib, with patterns being advanced using ```pt[gens]```, and many functions and properties are similar as well.
 ## Documentation
 Documentation on the ```lifetree``` and ```Pattern``` classes can be found in /doc.
+## Speed
+Given the terrible performance of the library, Cython support is avaliable to improve speed.
+If Cython is avaliable as a module, the function ```cython_compile()``` can be used to compile a shared object to improve the module's performance.
+The module attempts to load a shared object first, then loads the Python code if that fails. Remove faulty installations with ```remove_cython_compilation()```.
