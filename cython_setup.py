@@ -11,7 +11,7 @@ Requires that Cython is installed as a Python package.'''
     executable = os.path.basename(executable)
     if executable.endswith('.exe'):
         executable = executable[:-4]
-    cmd = '\"' + executable + '\" \"' + __file__ + '\" build_ext --inplace'
+    cmd = executable + ' \"' + __file__ + '\" build_ext --inplace'
     print('Attempting to compile using following command:')
     print(cmd)
     os.system(cmd)
