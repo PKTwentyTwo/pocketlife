@@ -31,15 +31,15 @@ if __name__ == '__main__':
         compilerargs = ['/O2']
     extensions = [
         Extension(
-            name="pylifetree",
-            sources=["pylifetree.pyx"],
+            name="cylifetree",
+            sources=["cylifetree.pyx"],
             language="c",
             extra_compile_args=compilerargs,
         )
     ]
 
     setup(
-        name="pylifetree",
+        name="cylifetree",
         ext_modules=cythonize(
             extensions,
             compiler_directives={
