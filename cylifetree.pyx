@@ -10,9 +10,9 @@ try:
 except ImportError:
     from hensel import RuleHandler
 try:
-    from .gridops import *
+    from .cygridops import *
 except ImportError:
-    from gridops import *
+    from cygridops import *
 #A few global variables:
 cdef char *CATAGOLUE_URL = 'https://catagolue.hatsya.com'
 class Lifetree:

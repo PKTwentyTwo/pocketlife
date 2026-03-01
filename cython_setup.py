@@ -62,7 +62,7 @@ if __name__ == '__main__':
         extension = '.pyd'
     with open(file, 'rb') as f:
         code = f.read()
-    with open('pylifetree' + extension, 'wb') as f:
+    with open('cylifetree' + extension, 'wb') as f:
         f.write(code)
     os.chdir(oldcwd)
 
