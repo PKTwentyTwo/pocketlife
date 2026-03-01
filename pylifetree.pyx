@@ -14,7 +14,7 @@ try:
 except ImportError:
     from gridops import *
 #A few global variables:
-CATAGOLUE_URL = 'https://catagolue.hatsya.com'
+cdef char *CATAGOLUE_URL = 'https://catagolue.hatsya.com'
 class Lifetree:
     '''Handles and simulates patterns.'''
     def __init__(self, rule='b3s23'):
@@ -53,7 +53,7 @@ class Lifetree:
         cdef int y = 0
         grid = {}
         cdef int position = -1
-        digits = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
+        cdef list digits = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
         cstring = ''
         isnum = False
         while position + 1 < len(rle):
@@ -240,7 +240,7 @@ class Lifetree:
             return self.pattern(thesoup2)
         else:
             if instring.count('-') == 1:
-                rle = instring.split('\n')[1]
+                rle = instring.split('-')[1]
                 return self.pattern(rle)
         return self.pattern('b!')
     def download_synth(self, apgcode):

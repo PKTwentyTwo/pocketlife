@@ -240,7 +240,7 @@ class Lifetree:
             return self.pattern(thesoup2)
         else:
             if instring.count('-') == 1:
-                rle = instring.split('\n')[1]
+                rle = instring.split('-')[1]
                 return self.pattern(rle)
         return self.pattern('b!')
     def download_synth(self, apgcode):
